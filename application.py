@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from flask import Flask
+from flask import Flask, render_template, request, redirect, url_for
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Recipe, Category
@@ -16,7 +16,7 @@ def HelloWorld():
 
 @app.route('/')
 @app.route('/categories')
-def Test():
+def Home():
     session = Session()
     categories = ''
     for category in session.query(Category).order_by(Category.name).all():
@@ -37,10 +37,16 @@ def CatoricalRecipeList(id):
     return recipes
 
 
-@app.route('/category/new')
+@app.route('/category/new', methods=['GET', 'POST'])
 def NewCategory():
-    # TODO
-    return 'page for category creation'
+    session = Session()
+    if request.method == 'POST':
+        newCategory = Category(name=request.form['name'])
+        session.add(newCategory)
+        session.commit()
+        return redirect(url_for('Home'))
+    else:
+        return render_template('newcategory.html')
 
 
 @app.route('/category/update_<id>')
@@ -74,10 +80,17 @@ def ShowRecipe(id):
     return output
 
 
-@app.route('/recipe/new')
+@app.route('/recipe/new', methods=['GET', 'POST'])
 def NewRecipe():
-    # TODO
-    return 'page for recipe creation'
+    session = Session()
+    if request.method == 'POST':
+        newRecipe = Recipe(name=request.form['name'],
+                           instructions=request.form['instructions'])
+        session.add(newRecipe)
+        session.commit()
+        return redirect(url_for('ShowRecipe', id=newRecipe.id))
+    else:
+        return render_template('newrecipe.html')
 
 
 @app.route('/recipe/update_<id>')
