@@ -37,23 +37,59 @@ def CatoricalRecipeList(id):
     return recipes
 
 
+@app.route('/category/new')
+def NewCategory():
+    # TODO
+    return 'page for category creation'
+
+
+@app.route('/category/update_<id>')
+def UpdateCategory(id):
+    # TODO
+    return 'page for category updates'
+
+
+@app.route('/category/delete_<id>')
+def DeleteCategory(id):
+    # TODO
+    return 'page for category deletion'
+
+
 @app.route('/recipes')
 def RecipeList():
     session = Session()
     recipes = ''
     for recipe in session.query(Recipe).all():
-        recipes += '<a href=\'/recipes/{}\'>{}</a>'.format(recipe.id,
-                                                           recipe.name)
+        recipes += '<a href=\'/recipe/{}\'>{}</a>'.format(recipe.id,
+                                                          recipe.name)
         recipes += '</br>'
     return recipes
 
 
-@app.route('/recipes/<id>')
+@app.route('/recipe/<id>')
 def ShowRecipe(id):
     session = Session()
     recipe = session.query(Recipe).filter(Recipe.id == id).one()
     output = '{}</br></br>{}'.format(recipe.name, recipe.instructions)
     return output
+
+
+@app.route('/recipe/new')
+def NewRecipe():
+    # TODO
+    return 'page for recipe creation'
+
+
+@app.route('/recipe/update_<id>')
+def UpdateRecipe(id):
+    # TODO
+    return 'page for recipe updates'
+
+
+@app.route('/recipe/delete_<id>')
+def DeleteRecipe(id):
+    # TODO
+    return 'page for recipe deletion'
 
 
 if __name__ == '__main__':
