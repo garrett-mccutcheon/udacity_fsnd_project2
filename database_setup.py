@@ -7,7 +7,7 @@ Base = declarative_base()
 
 
 class Recipe(Base):
-    __tablename__ = 'recipes'
+    __tablename__ = 'recipe'
 
     id = Column(Integer, primary_key=True)
     name = Column(String)

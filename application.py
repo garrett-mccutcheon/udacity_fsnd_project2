@@ -18,7 +18,26 @@ def HelloWorld():
 def Test():
     session = Session()
     recipe = session.query(Recipe).first()
-    return recipe
+    return recipe.name
+
+
+@app.route('/recipes')
+def RecipeList():
+    session = Session()
+    recipes = ''
+    for recipe in session.query(Recipe).all():
+        recipes += '<a href=\'/recipes/{}\'>{}</a>'.format(recipe.id,
+                                                           recipe.name)
+        recipes += '</br>'
+    return recipes
+
+
+@app.route('/recipes/<id>')
+def ShowRecipe(id):
+    session = Session()
+    recipe = session.query(Recipe).filter(Recipe.id == id).one()
+    output = '{}</br></br>{}'.format(recipe.name, recipe.instructions)
+    return output
 
 
 if __name__ == '__main__':
