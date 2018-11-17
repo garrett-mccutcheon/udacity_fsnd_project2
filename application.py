@@ -15,6 +15,7 @@ def HelloWorld():
 
 
 @app.route('/')
+@app.route('/categories')
 def Test():
     session = Session()
     categories = ''
