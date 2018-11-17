@@ -17,8 +17,23 @@ def HelloWorld():
 @app.route('/')
 def Test():
     session = Session()
-    recipe = session.query(Recipe).first()
-    return recipe.name
+    categories = ''
+    for category in session.query(Category).order_by(Category.name).all():
+        categories += '<a href=\'/category/{}\'>{}</a>'.format(category.id,
+                                                               category.name)
+        categories += '</br>'
+    return categories
+
+
+@app.route('/category/<id>')
+def CatoricalRecipeList(id):
+    session = Session()
+    recipes = ''
+    for recipe in session.query(Recipe).filter(Recipe.category_id == id).all():
+        recipes += '<a href=\'/recipes/{}\'>{}</a>'.format(recipe.id,
+                                                           recipe.name)
+        recipes += '</br>'
+    return recipes
 
 
 @app.route('/recipes')
