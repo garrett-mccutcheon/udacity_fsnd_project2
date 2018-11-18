@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Recipe, Category
 
 app = Flask(__name__)
-engine = create_engine('sqlite:///recipe_book.db')
+engine = create_engine('sqlite:///recipe_book.db', echo=True)
 Session = sessionmaker(bind=engine)
 
 
@@ -95,7 +95,9 @@ def RecipeList():
 def ShowRecipe(id):
     session = Session()
     recipe = session.query(Recipe).filter(Recipe.id == id).one()
-    output = '{}</br></br>{}'.format(recipe.name, recipe.instructions)
+    output = '{}</br></br>{}</br></br>{}'.format(recipe.name,
+                                                 recipe.category.name,
+                                                 recipe.instructions)
     return output
 
 
@@ -104,12 +106,15 @@ def NewRecipe():
     session = Session()
     if request.method == 'POST':
         newRecipe = Recipe(name=request.form['name'],
-                           instructions=request.form['instructions'])
+                           instructions=request.form['instructions'],
+                           category_id=request.form['category'])
         session.add(newRecipe)
         session.commit()
         return redirect(url_for('ShowRecipe', id=newRecipe.id))
     else:
-        return render_template('newrecipe.html')
+        categories = session.query(Category).all()
+        return render_template('newrecipe.html',
+                               categories=categories)
 
 
 @app.route('/recipe/update_<id>', methods=['GET', 'POST'])
@@ -120,14 +125,18 @@ def UpdateRecipe(id):
     if request.method == 'POST':
         recipeToUpdate.name = request.form['name']
         recipeToUpdate.instructions = request.form['instructions']
+        recipeToUpdate.category_id = request.form['category']
         session.add(recipeToUpdate)
         session.commit()
         return redirect(url_for('ShowRecipe', id=id))
     else:
+        categories = session.query(Category).all()
         return render_template('updaterecipe.html',
                                name=recipeToUpdate.name,
                                instructions=recipeToUpdate.instructions,
-                               id=id)
+                               id=id,
+                               category=recipeToUpdate.category.name,
+                               categories=categories)
 
 
 @app.route('/recipe/delete_<id>', methods=['GET', 'POST'])

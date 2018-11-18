@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>New Recipe</title>
+	<title>Update Recipe {{ name }}</title>
 </head>
 <body>
 
@@ -12,6 +12,11 @@
 		</br>
 		<p>Instructions:</p>
 		<input type="text" name="instructions" size='80' value="{{ instructions }}">
+		</br>
+		<p>Category:</p>
+		{% for cat in categories %}
+			<input type="radio" name="category" value="{{ cat.id }}" {% if cat.name == category %}checked{% endif %}>{{ cat.name }}</br>
+		{% endfor %}
 		</br>
 		<input type="submit" value='Update'>
 	</form>

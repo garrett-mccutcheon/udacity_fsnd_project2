@@ -12,6 +12,11 @@
 		<p>Instructions:</p>
 		<input type="text" name="instructions" size='80'>
 		</br>
+		<p>Category:</p>
+		{% for category in categories %}
+			<input type="radio" name="category" value="{{ category.id }}">{{ category.name }}</br>
+		{% endfor %}
+		</br>
 		<input type="submit" value='Create'>
 	</form>
 
