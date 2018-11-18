@@ -31,8 +31,8 @@ def CatoricalRecipeList(id):
     session = Session()
     recipes = ''
     for recipe in session.query(Recipe).filter(Recipe.category_id == id).all():
-        recipes += '<a href=\'/recipes/{}\'>{}</a>'.format(recipe.id,
-                                                           recipe.name)
+        recipes += '<a href=\'/recipe/{}\'>{}</a>'.format(recipe.id,
+                                                          recipe.name)
         recipes += '</br>'
     return recipes
 
@@ -49,13 +49,23 @@ def NewCategory():
         return render_template('newcategory.html')
 
 
-@app.route('/category/update_<id>')
+@app.route('/category/update_<id>', methods=['GET', 'POST'])
 def UpdateCategory(id):
-    # TODO
-    return 'page for category updates'
+    session = Session()
+    categoryToUpdate = session.query(Category).filter(
+        Category.id == id).one()
+    if request.method == 'POST':
+        categoryToUpdate.name = request.form['name']
+        session.add(categoryToUpdate)
+        session.commit()
+        return redirect(url_for('Home'))
+    else:
+        return render_template('updatecategory.html',
+                               name=categoryToUpdate.name,
+                               id=id)
 
 
-@app.route('/category/delete_<id>')
+@app.route('/category/delete_<id>', methods=['GET', 'POST'])
 def DeleteCategory(id):
     # TODO
     return 'page for category deletion'
@@ -93,13 +103,25 @@ def NewRecipe():
         return render_template('newrecipe.html')
 
 
-@app.route('/recipe/update_<id>')
+@app.route('/recipe/update_<id>', methods=['GET', 'POST'])
 def UpdateRecipe(id):
-    # TODO
-    return 'page for recipe updates'
+    session = Session()
+    recipeToUpdate = session.query(Recipe).filter(
+            Recipe.id == id).one()
+    if request.method == 'POST':
+        recipeToUpdate.name = request.form['name']
+        recipeToUpdate.instructions = request.form['instructions']
+        session.add(recipeToUpdate)
+        session.commit()
+        return redirect(url_for('ShowRecipe', id=id))
+    else:
+        return render_template('updaterecipe.html',
+                               name=recipeToUpdate.name,
+                               instructions=recipeToUpdate.instructions,
+                               id=id)
 
 
-@app.route('/recipe/delete_<id>')
+@app.route('/recipe/delete_<id>', methods=['GET', 'POST'])
 def DeleteRecipe(id):
     # TODO
     return 'page for recipe deletion'
