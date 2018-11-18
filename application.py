@@ -67,8 +67,17 @@ def UpdateCategory(id):
 
 @app.route('/category/delete_<id>', methods=['GET', 'POST'])
 def DeleteCategory(id):
-    # TODO
-    return 'page for category deletion'
+    session = Session()
+    categoryToDelete = session.query(Category).filter(
+        Category.id == id).one()
+    if request.method == 'POST':
+        session.delete(categoryToDelete)
+        session.commit()
+        return redirect(url_for('Home'))
+    else:
+        return render_template('deletecategory.html',
+                               name=categoryToDelete.name,
+                               id=id)
 
 
 @app.route('/recipes')
@@ -123,8 +132,17 @@ def UpdateRecipe(id):
 
 @app.route('/recipe/delete_<id>', methods=['GET', 'POST'])
 def DeleteRecipe(id):
-    # TODO
-    return 'page for recipe deletion'
+    session = Session()
+    recipeToDelete = session.query(Recipe).filter(
+        Recipe.id == id).one()
+    if request.method == 'POST':
+        session.delete(recipeToDelete)
+        session.commit()
+        return redirect(url_for('Home'))
+    else:
+        return render_template('deleterecipe.html',
+                               name=recipeToDelete.name,
+                               id=id)
 
 
 if __name__ == '__main__':
