@@ -24,9 +24,13 @@ def Home():
 
 
 @app.route('/category/<id>')
-def CatoricalRecipeList(id):
+@app.route('/recipes')
+def CatoricalRecipeList(id=None):
     session = Session()
-    recipes = session.query(Recipe).filter(Recipe.category_id == id).all()
+    if id:
+        recipes = session.query(Recipe).filter(Recipe.category_id == id).all()
+    else:
+        recipes = session.query(Recipe).all()
     return render_template('recipes.html',
                            recipes=recipes)
 
@@ -72,14 +76,6 @@ def DeleteCategory(id):
         return render_template('deletecategory.html',
                                name=categoryToDelete.name,
                                id=id)
-
-
-@app.route('/recipes')
-def RecipeList():
-    session = Session()
-    recipes = session.query(Recipe).all()
-    return render_template('recipes.html',
-                           recipes=recipes)
 
 
 @app.route('/recipe/<id>')
