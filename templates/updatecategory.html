@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Update Category</title>
+</head>
+<body>
+
+	<form action="{{ url_for('UpdateCategory', id = id) }}" method= "POST">
+		<h1>Updating category {{ name }}</h1>
+		<p>Name:</p>
+		<input type="text" name="name" size='30' value="{{ name }}">
+		</br>
+		<input type="submit" value='Update'>
+	</form>
+
+</body>
+</html>
