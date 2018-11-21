@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Categories</title>
+</head>
+<body>
+
+	{% for cat in categories %}
+	<a href='/category/{{ cat.id }}'>{{ cat.name}}</a>
+	</br>
+	{% endfor %}
+	</br>
+	<a href='/category/new'>Create New Category</a>
+
+</body>
+</html>

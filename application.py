@@ -26,23 +26,28 @@ def HelloWorld():
 @app.route('/categories')
 def Home():
     session = Session()
-    categories = ''
-    for category in session.query(Category).order_by(Category.name).all():
-        categories += '<a href=\'/category/{}\'>{}</a>'.format(category.id,
-                                                               category.name)
-        categories += '</br>'
-    return categories
+    categories = session.query(Category).order_by(Category.name).all()
+    return render_template('categories.html',
+                           categories=categories)
 
 
 @app.route('/category/<id>')
-def CatoricalRecipeList(id):
+@app.route('/recipes')
+def CatoricalRecipeList(id=None):
     session = Session()
-    recipes = ''
-    for recipe in session.query(Recipe).filter(Recipe.category_id == id).all():
-        recipes += '<a href=\'/recipe/{}\'>{}</a>'.format(recipe.id,
-                                                          recipe.name)
-        recipes += '</br>'
-    return recipes
+    if id:
+        recipes = session.query(Recipe).filter(Recipe.category_id == id).all()
+        category_name = (session.query(Category).
+                         filter(Category.id == id).
+                         one().name
+                         )
+    else:
+        recipes = session.query(Recipe).all()
+        category_name = None
+    return render_template('recipes.html',
+                           recipes=recipes,
+                           id=id,
+                           category_name=category_name)
 
 
 @app.route('/category/<id>/JSON')
@@ -95,17 +100,6 @@ def DeleteCategory(id):
                                id=id)
 
 
-@app.route('/recipes')
-def RecipeList():
-    session = Session()
-    recipes = ''
-    for recipe in session.query(Recipe).all():
-        recipes += '<a href=\'/recipe/{}\'>{}</a>'.format(recipe.id,
-                                                          recipe.name)
-        recipes += '</br>'
-    return recipes
-
-
 @app.route('/recipes/JSON')
 def RecipeListJSON():
     recipe_list = {}
@@ -122,14 +116,13 @@ def RecipeListJSON():
                                     }
     return jsonify(recipe_list)
 
+
 @app.route('/recipe/<id>')
 def ShowRecipe(id):
     session = Session()
     recipe = session.query(Recipe).filter(Recipe.id == id).one()
-    output = '{}</br></br>{}</br></br>{}'.format(recipe.name,
-                                                 recipe.category.name,
-                                                 recipe.instructions)
-    return output
+    return render_template('recipe.html',
+                           recipe=recipe)
 
 
 @app.route('/recipe/<id>/JSON')

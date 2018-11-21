@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ recipe.name }}</title>
+</head>
+<body>
+	<h1>{{ recipe.name }}</h1>
+
+	<p><i>{{ recipe.category.name }}</i></p>
+
+	<p>{{ recipe.instructions }}</p>
+
+	<a href='/recipe/update_{{ recipe.id }}'>Update Recipe</a>
+	<a href='/recipe/delete_{{ recipe.id }}'>Delete Recipe</a>
+
+</body>
+</html>
