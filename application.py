@@ -18,23 +18,17 @@ def HelloWorld():
 @app.route('/categories')
 def Home():
     session = Session()
-    categories = ''
-    for category in session.query(Category).order_by(Category.name).all():
-        categories += '<a href=\'/category/{}\'>{}</a>'.format(category.id,
-                                                               category.name)
-        categories += '</br>'
-    return categories
+    categories = session.query(Category).order_by(Category.name).all()
+    return render_template('categories.html',
+                           categories=categories)
 
 
 @app.route('/category/<id>')
 def CatoricalRecipeList(id):
     session = Session()
-    recipes = ''
-    for recipe in session.query(Recipe).filter(Recipe.category_id == id).all():
-        recipes += '<a href=\'/recipe/{}\'>{}</a>'.format(recipe.id,
-                                                          recipe.name)
-        recipes += '</br>'
-    return recipes
+    recipes = session.query(Recipe).filter(Recipe.category_id == id).all()
+    return render_template('recipes.html',
+                           recipes=recipes)
 
 
 @app.route('/category/new', methods=['GET', 'POST'])
@@ -83,22 +77,17 @@ def DeleteCategory(id):
 @app.route('/recipes')
 def RecipeList():
     session = Session()
-    recipes = ''
-    for recipe in session.query(Recipe).all():
-        recipes += '<a href=\'/recipe/{}\'>{}</a>'.format(recipe.id,
-                                                          recipe.name)
-        recipes += '</br>'
-    return recipes
+    recipes = session.query(Recipe).all()
+    return render_template('recipes.html',
+                           recipes=recipes)
 
 
 @app.route('/recipe/<id>')
 def ShowRecipe(id):
     session = Session()
     recipe = session.query(Recipe).filter(Recipe.id == id).one()
-    output = '{}</br></br>{}</br></br>{}'.format(recipe.name,
-                                                 recipe.category.name,
-                                                 recipe.instructions)
-    return output
+    return render_template('recipe.html',
+                           recipe=recipe)
 
 
 @app.route('/recipe/new', methods=['GET', 'POST'])
