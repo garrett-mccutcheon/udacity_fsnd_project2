@@ -29,10 +29,17 @@ def CatoricalRecipeList(id=None):
     session = Session()
     if id:
         recipes = session.query(Recipe).filter(Recipe.category_id == id).all()
+        category_name = (session.query(Category).
+                         filter(Category.id == id).
+                         one().name
+                         )
     else:
         recipes = session.query(Recipe).all()
+        category_name=None
     return render_template('recipes.html',
-                           recipes=recipes)
+                           recipes=recipes,
+                           id=id,
+                           category_name=category_name)
 
 
 @app.route('/category/new', methods=['GET', 'POST'])
