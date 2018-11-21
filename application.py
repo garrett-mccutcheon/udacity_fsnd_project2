@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Recipe, Category
@@ -7,6 +7,14 @@ from database_setup import Base, Recipe, Category
 app = Flask(__name__)
 engine = create_engine('sqlite:///recipe_book.db', echo=True)
 Session = sessionmaker(bind=engine)
+
+
+def serializeRecipe(self):
+    return {
+        'id': self.id,
+        'name': self.name,
+        'instructions': self.instructions
+    }
 
 
 @app.route('/hello')
@@ -35,6 +43,13 @@ def CatoricalRecipeList(id):
                                                           recipe.name)
         recipes += '</br>'
     return recipes
+
+
+@app.route('/category/<id>/JSON')
+def CategoricalRecipeListJSON(id):
+    session = Session()
+    recipes = session.query(Recipe).filter(Recipe.category_id == id).all()
+    return jsonify(recipes=[serializeRecipe(recipe) for recipe in recipes])
 
 
 @app.route('/category/new', methods=['GET', 'POST'])
@@ -91,6 +106,22 @@ def RecipeList():
     return recipes
 
 
+@app.route('/recipes/JSON')
+def RecipeListJSON():
+    recipe_list = {}
+    session = Session()
+    categories = session.query(Category).all()
+    for category in categories:
+        recipes = (session.query(Recipe)
+                   .filter(Recipe.category_id == category.id)
+                   .all()
+                   )
+        recipe_list[category.id] = {'name': category.name,
+                                    'recipes': ([serializeRecipe(recipe)
+                                                for recipe in recipes])
+                                    }
+    return jsonify(recipe_list)
+
 @app.route('/recipe/<id>')
 def ShowRecipe(id):
     session = Session()
@@ -99,6 +130,15 @@ def ShowRecipe(id):
                                                  recipe.category.name,
                                                  recipe.instructions)
     return output
+
+
+@app.route('/recipe/<id>/JSON')
+def ShowRecipeJSON(id):
+    session = Session()
+    recipe = session.query(Recipe).filter(Recipe.id == id).one()
+    return jsonify(id=recipe.id,
+                   name=recipe.name,
+                   instructions=recipe.instructions)
 
 
 @app.route('/recipe/new', methods=['GET', 'POST'])
