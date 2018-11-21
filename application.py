@@ -35,7 +35,7 @@ def CatoricalRecipeList(id=None):
                          )
     else:
         recipes = session.query(Recipe).all()
-        category_name=None
+        category_name = None
     return render_template('recipes.html',
                            recipes=recipes,
                            id=id,
