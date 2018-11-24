@@ -4,6 +4,15 @@
 	<title>Update Category</title>
 </head>
 <body>
+	{% with messages = get_flashed_messages() %}
+	  {% if messages %}
+	    <ul class=flashes>
+	    {% for message in messages %}
+	      <li>{{ message }}</li>
+	    {% endfor %}
+	    </ul>
+	  {% endif %}
+	{% endwith %}
 
 	<form action="{{ url_for('UpdateCategory', id = id) }}" method= "POST">
 		<h1>Updating category {{ name }}</h1>

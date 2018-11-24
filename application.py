@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import session as login_session
+from flask import flash
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Recipe, Category
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from functools import wraps
 
 app = Flask(__name__)
+app.secret_key = 'A'
 engine = create_engine('sqlite:///recipe_book.db', echo=True)
 Session = sessionmaker(bind=engine)
+CLIENT_ID = "1007442557157-gf75qaqfmn96vi5t27gk5pn7vd912oeh.apps.googleusercontent.com"
 
 
 def serializeRecipe(self):
@@ -15,6 +22,20 @@ def serializeRecipe(self):
         'name': self.name,
         'instructions': self.instructions
     }
+
+
+def login_required(secure_page):
+    @wraps(secure_page)
+    def wrapper(*args, **kwargs):
+        userid = login_session.get('userid')
+        if userid:
+            return secure_page(*args, **kwargs)
+        else:
+            flash("Please login to view this page.")
+            source = request.path
+            app.logger.debug(source)
+            return redirect(url_for('Login', source_url=source))
+    return wrapper
 
 
 @app.route('/hello')
@@ -58,6 +79,7 @@ def CategoricalRecipeListJSON(id):
 
 
 @app.route('/category/new', methods=['GET', 'POST'])
+@login_required
 def NewCategory():
     session = Session()
     if request.method == 'POST':
@@ -70,6 +92,7 @@ def NewCategory():
 
 
 @app.route('/category/update_<id>', methods=['GET', 'POST'])
+@login_required
 def UpdateCategory(id):
     session = Session()
     categoryToUpdate = session.query(Category).filter(
@@ -86,6 +109,7 @@ def UpdateCategory(id):
 
 
 @app.route('/category/delete_<id>', methods=['GET', 'POST'])
+@login_required
 def DeleteCategory(id):
     session = Session()
     categoryToDelete = session.query(Category).filter(
@@ -135,6 +159,7 @@ def ShowRecipeJSON(id):
 
 
 @app.route('/recipe/new', methods=['GET', 'POST'])
+@login_required
 def NewRecipe():
     session = Session()
     if request.method == 'POST':
@@ -145,12 +170,13 @@ def NewRecipe():
         session.commit()
         return redirect(url_for('ShowRecipe', id=newRecipe.id))
     else:
+        app.logger.debug('User logged in as {}'.format(login_session['userid']))
         categories = session.query(Category).all()
-        return render_template('newrecipe.html',
-                               categories=categories)
+        return render_template('newrecipe.html', categories=categories)
 
 
 @app.route('/recipe/update_<id>', methods=['GET', 'POST'])
+@login_required
 def UpdateRecipe(id):
     session = Session()
     recipeToUpdate = session.query(Recipe).filter(
@@ -173,6 +199,7 @@ def UpdateRecipe(id):
 
 
 @app.route('/recipe/delete_<id>', methods=['GET', 'POST'])
+@login_required
 def DeleteRecipe(id):
     session = Session()
     recipeToDelete = session.query(Recipe).filter(
@@ -185,6 +212,44 @@ def DeleteRecipe(id):
         return render_template('deleterecipe.html',
                                name=recipeToDelete.name,
                                id=id)
+
+
+@app.route('/login')
+def Login():
+    source_url = request.args.get('source_url')
+    app.logger.debug(source_url)
+    return render_template('login.html', source_url=source_url)
+
+
+@app.route('/logout', methods=['POST'])
+def Logout():
+    user = login_session['userid']
+    del login_session['userid']
+    return "User {} logged out.".format(user)
+
+
+@app.route('/googleoauth', methods=['POST'])
+def GoogleOAuth(source_url=None):
+    try:
+        # Specify the CLIENT_ID of the app that accesses the backend:
+        idinfo = (id_token.verify_oauth2_token(request.form['idtoken'],
+                                               requests.Request(),
+                                               CLIENT_ID))
+
+        if idinfo['iss'] not in ['accounts.google.com',
+                                 'https://accounts.google.com']:
+            return 'Wrong issuer.'
+
+        # ID token is valid.
+        # From here we can verify that the user is in the DB and create a
+        # session for that user
+        login_session['userid'] = idinfo['sub']
+        flash("You have successfully logged in via Google as {}"
+              .format(idinfo['email']))
+        return "{} id {}".format(idinfo['email'], login_session['userid'])
+    except ValueError:
+        # Invalid token
+        return "Invalid Token"
 
 
 if __name__ == '__main__':
