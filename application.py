@@ -8,12 +8,17 @@ from database_setup import Base, Recipe, Category
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from functools import wraps
+import requests as http_requests
 
 app = Flask(__name__)
 app.secret_key = 'A'
 engine = create_engine('sqlite:///recipe_book.db', echo=True)
 Session = sessionmaker(bind=engine)
-CLIENT_ID = "1007442557157-gf75qaqfmn96vi5t27gk5pn7vd912oeh.apps.googleusercontent.com"
+
+# Oauth variables
+GOOGLE_CLIENT_ID = "1007442557157-gf75qaqfmn96vi5t27gk5pn7vd912oeh.apps.googleusercontent.com"
+GITHUB_CLIENT_ID = "ed4b8c9715caa0b691c8"
+GITHUB_CLIENT_SECRET = "39cb00634773a3e774c9bd2d9316d5574c1ec80b"
 
 
 def serializeRecipe(self):
@@ -216,25 +221,44 @@ def DeleteRecipe(id):
 
 @app.route('/login')
 def Login():
-    source_url = request.args.get('source_url')
-    app.logger.debug(source_url)
-    return render_template('login.html', source_url=source_url)
+    user_id = login_session.get('userid')
+    app.logger.debug(user_id)
+    if user_id:
+        return render_template('login.html',
+                               logged_in=True,
+                               provider=login_session.get('provider'),
+                               user=login_session.get('username'))
+    else:
+        source_url = request.args.get('source_url')
+        app.logger.debug(source_url)
+        return render_template('login.html',
+                               logged_in=False,
+                               source_url=source_url,
+                               github_client_id=GITHUB_CLIENT_ID)
 
 
 @app.route('/logout', methods=['POST'])
 def Logout():
-    user = login_session['userid']
-    del login_session['userid']
-    return "User {} logged out.".format(user)
+    if login_session.get('userid'):
+        provider = login_session.get('provider')
+        user = login_session.get('username')
+        user_id = login_session.get('userid')
+        app.logger.debug(login_session)
+        login_session.pop('userid')
+        flash("User {} @ {} logged out.".format(user, provider))
+        return redirect(url_for('Login'))
+    else:
+        flash("No user was logged in, so logout is unnecessary.")
+        return redirect(url_for('Login'))
 
 
 @app.route('/googleoauth', methods=['POST'])
-def GoogleOAuth(source_url=None):
+def GoogleOAuth():
     try:
         # Specify the CLIENT_ID of the app that accesses the backend:
         idinfo = (id_token.verify_oauth2_token(request.form['idtoken'],
                                                requests.Request(),
-                                               CLIENT_ID))
+                                               GOOGLE_CLIENT_ID))
 
         if idinfo['iss'] not in ['accounts.google.com',
                                  'https://accounts.google.com']:
@@ -243,13 +267,47 @@ def GoogleOAuth(source_url=None):
         # ID token is valid.
         # From here we can verify that the user is in the DB and create a
         # session for that user
+        login_session['provider'] = 'Google'
         login_session['userid'] = idinfo['sub']
+        login_session['username'] = idinfo['name']
         flash("You have successfully logged in via Google as {}"
               .format(idinfo['email']))
         return "{} id {}".format(idinfo['email'], login_session['userid'])
     except ValueError:
         # Invalid token
         return "Invalid Token"
+
+
+@app.route('/githuboauth', methods=['GET', 'POST'])
+def GithubOAuth():
+    if request.args.get('code'):
+        user_oauth_code = request.args.get('code')
+
+        request_url = 'https://github.com/login/oauth/access_token'
+        bearer_token = {'client_id': GITHUB_CLIENT_ID,
+                        'client_secret': GITHUB_CLIENT_SECRET,
+                        'code': user_oauth_code
+                        }
+        header = {'Accept': 'application/json'}
+        get_access_token = http_requests.post(request_url,
+                                              bearer_token,
+                                              headers=header)
+        access_token = get_access_token.json()['access_token']
+        userurl = ('https://api.github.com/user?access_token={}'
+                   .format(access_token))
+        get_user_data = http_requests.get(userurl)
+        user_json = get_user_data.json()
+
+        # Specify Github-specific token info
+        login_session['provider'] = 'Github'
+        login_session['userid'] = user_json['id']
+        login_session['username'] = user_json['name']
+        flash("You have successfully logged in via Github as {}"
+              .format(user_json['name']))
+        return redirect(url_for('Login'))
+    else:
+        flash("No authorization was provided. Try again.")
+        return redirect(url_for('Login'))
 
 
 if __name__ == '__main__':

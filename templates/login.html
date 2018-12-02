@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title>Login</title>
-	<script src="https://apis.google.com/js/platform.js" async defer></script>
+	<script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
 	<meta name="google-signin-client_id" content="1007442557157-gf75qaqfmn96vi5t27gk5pn7vd912oeh.apps.googleusercontent.com">
 </head>
 <body>
@@ -16,6 +16,40 @@
 	  {% endif %}
 	{% endwith %}
 
+	{% if logged_in == true %}
+
+	<p>You are logged in as {{ user }} via {{ provider }}.</p>
+
+	<a href="" onclick="signOut();">Click here to sign out of this application.</a>
+		<script>
+		  function signOut() {
+		  	var xhr = new XMLHttpRequest();
+			xhr.open('POST', '/logout');
+			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xhr.send('logout');
+			xhr.onload = function() {
+			  console.log(xhr.responseText);
+			};
+			{% if provider == 'Google' %}
+			var auth2 = gapi.auth2.getAuthInstance();
+		    auth2.signOut().then(function() {
+		      	console.log('User signed out of Google on this webpage.');
+			})
+		    {% endif %}
+			}
+		</script>
+
+		{% if provider == 'Google' %}
+		<script>
+			function init() {
+				gapi.load('auth2', function() {
+					gapi.auth2.init();
+				}
+			)};
+		</script>
+		{% endif %}
+
+	{% elif logged_in == false %}
 	<div class="g-signin2" data-onsuccess="onSignIn"></div>
 
 	<script>
@@ -48,22 +82,10 @@
 		{% endif %}
       };
     </script>
-    <a href="#" onclick="signOut();">Sign out</a>
-		<script>
-		  function signOut() {
-		  	var xhr = new XMLHttpRequest();
-			xhr.open('POST', '/logout');
-			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-			xhr.send('logout');
-			xhr.onload = function() {
-			  console.log(xhr.responseText);
-			};
-		    var auth2 = gapi.auth2.getAuthInstance();
-		    auth2.signOut().then(function () {
-		      console.log('User signed out of Google on this webpage.');
-		    });
-		  }
-		</script>
+    <a href="https://github.com/login/oauth/authorize?client_id={{ github_client_id }}">Click here to sign in via Github!</a>
+	</br>
+	{% endif %}
+
 
 </body>
 </html>
