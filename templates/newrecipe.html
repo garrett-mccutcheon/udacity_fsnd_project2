@@ -2,32 +2,71 @@
 <html>
 <head>
 	<title>New Recipe</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/base.css') }}" />
+	<link href='https://fonts.googleapis.com/css?family=Open Sans' rel='stylesheet'>
 </head>
 <body>
+	<div class="nav">
+		<a href="{{ url_for('Home') }}">Categories</a>
+		<a href="{{ url_for('CategoricalRecipeList') }}">Recipes</a>
+		<a href="{{ url_for('Login') }}">Login</a>
+		<a href="{{ url_for('Login') }}" onclick="signOut();">Logout</a>
+			<script>
+			  function signOut() {
+			  	var xhr = new XMLHttpRequest();
+				xhr.open('POST', '/logout');
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				xhr.send('logout');
+				xhr.onload = function() {
+				  console.log(xhr.responseText);
+				};
+				{% if provider == 'Google' %}
+				var auth2 = gapi.auth2.getAuthInstance();
+			    auth2.signOut().then(function() {
+			      	console.log('User signed out of Google on this webpage.');
+				})
+			    {% endif %}
+				}
+			</script>
+
+			{% if provider == 'Google' %}
+			<script>
+				function init() {
+					gapi.load('auth2', function() {
+						gapi.auth2.init();
+					}
+				)};
+			</script>
+			{% endif %}
+	</div>
 	{% with messages = get_flashed_messages() %}
 	  {% if messages %}
+	    <div class="flashes">
 	    <ul class=flashes>
 	    {% for message in messages %}
 	      <li>{{ message }}</li>
 	    {% endfor %}
 	    </ul>
+	    </div>
 	  {% endif %}
 	{% endwith %}
 
+	<div class="form">
 	<form action="{{ url_for('NewRecipe') }}" method= "POST">
 		<p>Name:</p>
-		<input type="text" name="name" size='30'>
+		<input class="smallbox" type="text" name="name" size='30'>
 		</br>
 		<p>Instructions:</p>
-		<input type="text" name="instructions" size='80'>
+		<input class="bigbox" type="text" name="instructions" size='80'>
 		</br>
 		<p>Category:</p>
 		{% for category in categories %}
-			<input type="radio" name="category" value="{{ category.id }}">{{ category.name }}</br>
+			<input class="radiolist" type="radio" name="category" value="{{ category.id }}">{{ category.name }}</br>
 		{% endfor %}
 		</br>
 		<input type="submit" value='Create'>
 	</form>
+	</div>
 
 </body>
 </html>

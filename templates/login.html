@@ -4,20 +4,31 @@
 	<title>Login</title>
 	<script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
 	<meta name="google-signin-client_id" content="1007442557157-gf75qaqfmn96vi5t27gk5pn7vd912oeh.apps.googleusercontent.com">
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/base.css') }}" />
+	<link href='https://fonts.googleapis.com/css?family=Open Sans' rel='stylesheet'>
 </head>
 <body>
+	<div class="nav">
+		<a href="{{ url_for('Home') }}">Categories</a>
+		<a href="{{ url_for('CategoricalRecipeList') }}">Recipes</a>
+		<a href="{{ url_for('Login') }}">Login</a>
+		<a href="{{ url_for('Login') }}" onclick="signOut();">Logout</a>
+	</div>
+
 	{% with messages = get_flashed_messages() %}
 	  {% if messages %}
-	    <ul class=flashes>
+	  	<div class="flashes">
+	    <ul class="flashes">
 	    {% for message in messages %}
 	      <li>{{ message }}</li>
 	    {% endfor %}
 	    </ul>
+		</div>
 	  {% endif %}
 	{% endwith %}
 
 	{% if logged_in == true %}
-
+	<div class="form">
 	<p>You are logged in as {{ user }} via {{ provider }}.</p>
 
 	<a href="" onclick="signOut();">Click here to sign out of this application.</a>
@@ -48,44 +59,49 @@
 			)};
 		</script>
 		{% endif %}
-
+	</div>
 	{% elif logged_in == false %}
-	<div class="g-signin2" data-onsuccess="onSignIn"></div>
+	<div class="login-box">
+		<div class="g-signin2" data-onsuccess="onSignIn"></div>
 
-	<script>
-      function onSignIn(googleUser) {
-        // Useful data for your client-side scripts:
-        var profile = googleUser.getBasicProfile();
-        console.log("ID: " + profile.getId()); // Don't send this directly to your server!
-        console.log('Full Name: ' + profile.getName());
-        console.log('Given Name: ' + profile.getGivenName());
-        console.log('Family Name: ' + profile.getFamilyName());
-        console.log("Image URL: " + profile.getImageUrl());
-        console.log("Email: " + profile.getEmail());
+		<script>
+	      function onSignIn(googleUser) {
+	        // Useful data for your client-side scripts:
+	        var profile = googleUser.getBasicProfile();
+	        console.log("ID: " + profile.getId()); // Don't send this directly to your server!
+	        console.log('Full Name: ' + profile.getName());
+	        console.log('Given Name: ' + profile.getGivenName());
+	        console.log('Family Name: ' + profile.getFamilyName());
+	        console.log("Image URL: " + profile.getImageUrl());
+	        console.log("Email: " + profile.getEmail());
 
-        // The ID token you need to pass to your backend:
-        var id_token = googleUser.getAuthResponse().id_token;
-        console.log("ID Token: " + id_token);
+	        // The ID token you need to pass to your backend:
+	        var id_token = googleUser.getAuthResponse().id_token;
+	        console.log("ID Token: " + id_token);
 
-        var xhr = new XMLHttpRequest();
-			xhr.open('POST', '/googleoauth');
-			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-			xhr.onload = function() {
-			  console.log('Signed in as: ' + xhr.responseText);
-			};
-			xhr.send('idtoken=' + id_token + '&state={{ state }}');
+	        var xhr = new XMLHttpRequest();
+				xhr.open('POST', '/googleoauth');
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				xhr.onload = function() {
+				  console.log('Signed in as: ' + xhr.responseText);
+				};
+				xhr.send('idtoken=' + id_token + '&state={{ state }}');
 
-		{% if source_url %}
-		setTimeout(function() {
-          window.location.href = "{{ source_url }}";
-         }, 4000);
+			{% if source_url %}
+			setTimeout(function() {
+	          window.location.href = "{{ source_url }}";
+	         }, 4000);
+			{% endif %}
+	      };
+	    </script>
+
+	    <a href="https://github.com/login/oauth/authorize?client_id={{ github_client_id }}" class="github-signin">
+	    	<div>
+	    	<p>Click here to sign in via <b>GitHub!</b></p>
+	    	</div>
+	    </a>
 		{% endif %}
-      };
-    </script>
-    <a href="https://github.com/login/oauth/authorize?client_id={{ github_client_id }}">Click here to sign in via Github!</a>
-	</br>
-	{% endif %}
-
+	</div>
 
 </body>
 </html>

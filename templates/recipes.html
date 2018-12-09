@@ -2,10 +2,46 @@
 <html>
 <head>
 	<title>Recipes</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/base.css') }}" />
+	<link href='https://fonts.googleapis.com/css?family=Open Sans' rel='stylesheet'>
 </head>
 <body>
+	<div class="nav">
+		<a href="{{ url_for('Home') }}">Categories</a>
+		<a href="{{ url_for('CategoricalRecipeList') }}">Recipes</a>
+		<a href="{{ url_for('Login') }}">Login</a>
+		<a href="{{ url_for('Login') }}" onclick="signOut();">Logout</a>
+			<script>
+			  function signOut() {
+			  	var xhr = new XMLHttpRequest();
+				xhr.open('POST', '/logout');
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				xhr.send('logout');
+				xhr.onload = function() {
+				  console.log(xhr.responseText);
+				};
+				{% if provider == 'Google' %}
+				var auth2 = gapi.auth2.getAuthInstance();
+			    auth2.signOut().then(function() {
+			      	console.log('User signed out of Google on this webpage.');
+				})
+			    {% endif %}
+				}
+			</script>
+
+			{% if provider == 'Google' %}
+			<script>
+				function init() {
+					gapi.load('auth2', function() {
+						gapi.auth2.init();
+					}
+				)};
+			</script>
+			{% endif %}
+	</div>
+	<div class="list">
 	{% if id %}
-	<h1>{{ category_name }}</h1>
+	<h2>{{ category_name }}</h2>
 	{% else %}
 	<h1>All Recipes</h1>
 	{% endif %}
@@ -19,6 +55,7 @@
 	</br>
 	<a href='/category/update_{{ id }}'>Update Category</a>
 	{% endif %}
+	</div>
 
 </body>
 </html>

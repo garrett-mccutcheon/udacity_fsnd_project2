@@ -59,7 +59,7 @@ def Home():
 
 @app.route('/category/<id>')
 @app.route('/recipes')
-def CatoricalRecipeList(id=None):
+def CategoricalRecipeList(id=None):
     session = Session()
     if id:
         recipes = session.query(Recipe).filter(Recipe.category_id == id).all()

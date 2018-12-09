@@ -1,0 +1,129 @@
+.nav {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: space-around;
+	border: 1px solid #010101;
+	background-color: #00b3e9;
+	padding: 8px 12px;
+	box-shadow: 8px 8px 5px #444;
+	margin: 10px;
+}
+
+.nav a {
+	color: white;
+	font-family: 'Open Sans';
+	font-size: 16px;
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	justify-content: space-around;
+	border: 1px solid #010101;
+	padding: 8px 12px;
+	margin: 10px;
+}
+
+.list a {
+	font-family: 'Open Sans';
+	font-size: 12px;
+}
+
+.list h1 {
+	font-family: 'Open Sans';
+	font-size: 38px;
+}
+
+.list h2 {
+	font-family: 'Open Sans';
+	font-size: 22px;
+}
+
+.flashes {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #010101;
+	background-color: red;
+	padding: 8px 12px;
+	margin: 10px;
+}
+
+.login-box {
+	position: relative;
+	left: 40%;
+	width: 20%;
+	margin-top: 30px;
+	border: 1px solid #010101;
+	border-radius: 12px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+	background-color: grey;
+	box-shadow: 8px 8px 5px #444;
+}
+
+.g-signin2 {
+	margin-top: 30px;
+}
+
+.github-signin {
+	margin-top: 30px;
+	margin-bottom: 30px;
+	height: 50px;
+	border: 1px solid #FFFFFF;
+	border-radius: 2px;
+	font-family: 'Open Sans';
+	font-size: 16px;
+	color: #000000;
+	background-image: url('GitHub-Mark-Light-32px.png');
+	background-color: #24292e;
+	background-size: 32px;
+	background-position: 4px;
+	background-repeat: no-repeat;
+	box-shadow: 2px 2px 5px #444;
+	text-decoration: none;
+}
+
+.github-signin:hover {
+	box-shadow: 2px 2px 5px #010100;
+}
+
+.github-signin p {
+	margin-left: 40px;
+	margin-right: 4px;
+	vertical-align: middle;
+	color: #FFFFFF;
+	text-decoration: none;
+}
+
+.recipe {
+	border: 1px solid #010101;
+	padding: 8px 12px;
+	margin: 10px;
+}
+
+.recipe h1 {
+	font-family: 'Open Sans';
+	font-size: 38px;
+}
+
+.recipe h2 {
+	font-family: 'Open Sans';
+	font-size: 22px;
+}
+
+.recipe p {
+	font-family: 'Open Sans';
+	font-size: 12px;
+}
+
+.form {
+	border: 1px solid #010101;
+	padding: 8px 12px;
+	margin: 10px;
+	font-family: 'Open Sans';
+	font-size: 12px;
+}
