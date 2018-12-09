@@ -15,13 +15,21 @@ app.secret_key = 'A'
 engine = create_engine('sqlite:///recipe_book.db', echo=True)
 Session = sessionmaker(bind=engine)
 
-# Oauth variables
+# OAuth variables
 GOOGLE_CLIENT_ID = "1007442557157-gf75qaqfmn96vi5t27gk5pn7vd912oeh.apps.googleusercontent.com"
 GITHUB_CLIENT_ID = "ed4b8c9715caa0b691c8"
 GITHUB_CLIENT_SECRET = "39cb00634773a3e774c9bd2d9316d5574c1ec80b"
 
 
 def serializeRecipe(self):
+    """Serializes recipe information
+
+    Returs a recipe as a serialized dict making it easier to present a series
+    of recipes in a list. This is mostly useful when returing JSON.
+
+    Returns:
+        A dict of the key elements of a recipe.
+    """
     return {
         'id': self.id,
         'name': self.name,
@@ -30,6 +38,22 @@ def serializeRecipe(self):
 
 
 def login_required(secure_page):
+    """Checks if a user is logged in an routes them appropriately
+
+    This method protects resources by requiring that a user be signed in to
+    access that resource. This uses the login_session to determine if a userid
+    is present in the session. If no userid is present then a user is not
+    logged in and should be routed to the login page. Otherwise, there is an
+    active user session and the user should be allowed to access the protected
+    resource.
+
+    Args:
+        secure_page: the page which should be secured (aka requires login)
+
+    Returns:
+        If a user is logged in this returns the page the user requested.
+        If a user is NOT logged in this returns a redirect to the login page.
+    """
     @wraps(secure_page)
     def wrapper(*args, **kwargs):
         userid = login_session.get('userid')
@@ -281,8 +305,14 @@ def GoogleOAuth():
 @app.route('/githuboauth', methods=['GET', 'POST'])
 def GithubOAuth():
     if request.args.get('code'):
+        # Retrieve the code from the auth response
         user_oauth_code = request.args.get('code')
 
+        """Generate a request to the GitHub auth portal using the code
+        provided via the redirect_uri from GitHub's authentication flow. The
+        POST request will return a JSON object containing the information
+        from the User's profile.
+        """
         request_url = 'https://github.com/login/oauth/access_token'
         bearer_token = {'client_id': GITHUB_CLIENT_ID,
                         'client_secret': GITHUB_CLIENT_SECRET,
