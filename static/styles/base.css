@@ -127,3 +127,13 @@
 	font-family: 'Open Sans';
 	font-size: 12px;
 }
+
+.form input:required:invalid {
+	border-left-color: salmon;
+	border-left-width: 5px;
+}
+
+.form input:required:valid {
+	border-left-color: palegreen;
+	border-left-width: 5px;
+}

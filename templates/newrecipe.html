@@ -54,14 +54,14 @@
 	<div class="form">
 	<form action="{{ url_for('NewRecipe') }}" method= "POST">
 		<p>Name:</p>
-		<input class="smallbox" type="text" name="name" size='30'>
+		<input class="smallbox" type="text" name="name" size='30' required>
 		</br>
 		<p>Instructions:</p>
-		<input class="bigbox" type="text" name="instructions" size='80'>
+		<input class="bigbox" type="text" name="instructions" size='80' required>
 		</br>
 		<p>Category:</p>
 		{% for category in categories %}
-			<input class="radiolist" type="radio" name="category" value="{{ category.id }}">{{ category.name }}</br>
+			<input class="radiolist" type="radio" name="category" value="{{ category.id }}" required>{{ category.name }}</br>
 		{% endfor %}
 		</br>
 		<input type="submit" value='Create'>
