@@ -45,9 +45,10 @@
 		<p><i>{{ recipe.category.name }}</i></p>
 
 		<p>{{ recipe.instructions }}</p>
-
+		{% if owner %}
 		<a href='/recipe/update_{{ recipe.id }}'>Update Recipe</a>
 		<a href='/recipe/delete_{{ recipe.id }}'>Delete Recipe</a>
+		{% endif %}
 	</div>
 
 </body>

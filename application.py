@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask import session as login_session
 from flask import flash
+from flask import abort
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Recipe, Category
@@ -85,19 +86,25 @@ def Home():
 @app.route('/recipes')
 def CategoricalRecipeList(id=None):
     session = Session()
+    current_user = login_session.get('userid')
     if id:
         recipes = session.query(Recipe).filter(Recipe.category_id == id).all()
-        category_name = (session.query(Category).
-                         filter(Category.id == id).
-                         one().name
-                         )
+        category = session.query(Category).filter(Category.id == id).one()
+        category_name = category.name
+        category_author = category.author
+        if current_user == category_author:
+            owner = True
+        else:
+            owner = False
     else:
         recipes = session.query(Recipe).all()
         category_name = None
+        owner = False
     return render_template('recipes.html',
                            recipes=recipes,
                            id=id,
-                           category_name=category_name)
+                           category_name=category_name,
+                           owner=owner)
 
 
 @app.route('/category/<id>/JSON')
@@ -112,7 +119,8 @@ def CategoricalRecipeListJSON(id):
 def NewCategory():
     session = Session()
     if request.method == 'POST':
-        newCategory = Category(name=request.form['name'])
+        newCategory = Category(name=request.form['name'],
+                               author=login_session.get('userid'))
         session.add(newCategory)
         session.commit()
         return redirect(url_for('Home'))
@@ -126,15 +134,22 @@ def UpdateCategory(id):
     session = Session()
     categoryToUpdate = session.query(Category).filter(
         Category.id == id).one()
+    current_user = login_session.get('userid')
     if request.method == 'POST':
-        categoryToUpdate.name = request.form['name']
-        session.add(categoryToUpdate)
-        session.commit()
-        return redirect(url_for('Home'))
+        if current_user == categoryToUpdate.author:
+            categoryToUpdate.name = request.form['name']
+            session.add(categoryToUpdate)
+            session.commit()
+            return redirect(url_for('Home'))
+        else:
+            return abort(403)
     else:
-        return render_template('updatecategory.html',
-                               name=categoryToUpdate.name,
-                               id=id)
+        if current_user == categoryToUpdate.author:
+            return render_template('updatecategory.html',
+                                   name=categoryToUpdate.name,
+                                   id=id)
+        else:
+            return abort(403)
 
 
 @app.route('/category/delete_<id>', methods=['GET', 'POST'])
@@ -143,14 +158,21 @@ def DeleteCategory(id):
     session = Session()
     categoryToDelete = session.query(Category).filter(
         Category.id == id).one()
+    current_user = login_session.get('userid')
     if request.method == 'POST':
-        session.delete(categoryToDelete)
-        session.commit()
-        return redirect(url_for('Home'))
+        if current_user == categoryToDelete.author:
+            session.delete(categoryToDelete)
+            session.commit()
+            return redirect(url_for('Home'))
+        else:
+            return abort(403)
     else:
-        return render_template('deletecategory.html',
-                               name=categoryToDelete.name,
-                               id=id)
+        if current_user == categoryToDelete.author:
+            return render_template('deletecategory.html',
+                                   name=categoryToDelete.name,
+                                   id=id)
+        else:
+            return abort(403)
 
 
 @app.route('/recipes/JSON')
@@ -174,8 +196,14 @@ def RecipeListJSON():
 def ShowRecipe(id):
     session = Session()
     recipe = session.query(Recipe).filter(Recipe.id == id).one()
+    current_user = login_session.get('userid')
+    if current_user == recipe.author:
+        owner = True
+    else:
+        owner = False
     return render_template('recipe.html',
-                           recipe=recipe)
+                           recipe=recipe,
+                           owner=owner)
 
 
 @app.route('/recipe/<id>/JSON')
@@ -191,10 +219,12 @@ def ShowRecipeJSON(id):
 @login_required
 def NewRecipe():
     session = Session()
+    author = login_session.get('userid')
     if request.method == 'POST':
         newRecipe = Recipe(name=request.form['name'],
                            instructions=request.form['instructions'],
-                           category_id=request.form['category'])
+                           category_id=request.form['category'],
+                           author=author)
         session.add(newRecipe)
         session.commit()
         return redirect(url_for('ShowRecipe', id=newRecipe.id))
@@ -210,21 +240,28 @@ def UpdateRecipe(id):
     session = Session()
     recipeToUpdate = session.query(Recipe).filter(
             Recipe.id == id).one()
+    current_user = login_session.get('userid')
     if request.method == 'POST':
-        recipeToUpdate.name = request.form['name']
-        recipeToUpdate.instructions = request.form['instructions']
-        recipeToUpdate.category_id = request.form['category']
-        session.add(recipeToUpdate)
-        session.commit()
-        return redirect(url_for('ShowRecipe', id=id))
+        if current_user == recipeToUpdate.author:
+            recipeToUpdate.name = request.form['name']
+            recipeToUpdate.instructions = request.form['instructions']
+            recipeToUpdate.category_id = request.form['category']
+            session.add(recipeToUpdate)
+            session.commit()
+            return redirect(url_for('ShowRecipe', id=id))
+        else:
+            return abort(403)
     else:
         categories = session.query(Category).all()
-        return render_template('updaterecipe.html',
-                               name=recipeToUpdate.name,
-                               instructions=recipeToUpdate.instructions,
-                               id=id,
-                               category=recipeToUpdate.category.name,
-                               categories=categories)
+        if current_user == recipeToUpdate.author:
+            return render_template('updaterecipe.html',
+                                   name=recipeToUpdate.name,
+                                   instructions=recipeToUpdate.instructions,
+                                   id=id,
+                                   category=recipeToUpdate.category.name,
+                                   categories=categories)
+        else:
+            return abort(403)
 
 
 @app.route('/recipe/delete_<id>', methods=['GET', 'POST'])
@@ -233,14 +270,21 @@ def DeleteRecipe(id):
     session = Session()
     recipeToDelete = session.query(Recipe).filter(
         Recipe.id == id).one()
+    current_user = login_session.get('userid')
     if request.method == 'POST':
-        session.delete(recipeToDelete)
-        session.commit()
-        return redirect(url_for('Home'))
+        if current_user == recipeToDelete.author:
+            session.delete(recipeToDelete)
+            session.commit()
+            return redirect(url_for('Home'))
+        else:
+            return abort(403)
     else:
-        return render_template('deleterecipe.html',
-                               name=recipeToDelete.name,
-                               id=id)
+        if current_user == recipeToDelete.author:
+            return render_template('deleterecipe.html',
+                                   name=recipeToDelete.name,
+                                   id=id)
+        else:
+            return abort(403)
 
 
 @app.route('/login')

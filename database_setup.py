@@ -14,6 +14,7 @@ class Recipe(Base):
     instructions = Column(Text)
     created_date = Column(Date)
     category_id = Column(Integer, ForeignKey('category.id'))
+    author = Column(Text)
 
     category = relationship("Category", back_populates="recipes")
 
@@ -24,5 +25,6 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('category.id'))
     name = Column(String)
+    author = Column(Text)
 
     recipes = relationship("Recipe", back_populates="category")

@@ -51,9 +51,11 @@
 	{% endfor %}
 	</br>
 	<a href='/recipe/new'>Create New Recipe</a>
-	{% if id %}
+	{% if id and owner %}
 	</br>
 	<a href='/category/update_{{ id }}'>Update Category</a>
+	</br>
+	<a href='/category/delete_{{ id }}'>Delete Category</a>
 	{% endif %}
 	</div>
 
