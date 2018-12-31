@@ -10,10 +10,11 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from functools import wraps
 import requests as http_requests
+import psycopg2
 
 app = Flask(__name__)
 app.secret_key = 'A'
-engine = create_engine('sqlite:///recipe_book.db', echo=True)
+engine = create_engine('postgresql+psycopg2://postgres:@/catalog', echo=True)
 Session = sessionmaker(bind=engine)
 
 # OAuth variables
